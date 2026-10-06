@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, type CSSProperties } from "react";
+import { useState, useCallback, type CSSProperties } from "react";
 import type { SparkSnapshot } from "../../api/types";
 import { isLlmMonitoringEnabled } from "../../api/sparkRole";
-import { updateSpark, refreshSparkMetric } from "../../api/client";
 import { SparkHeader } from "./SparkHeader";
 import { GpuPanel } from "./GpuPanel";
 import { RamPanel } from "./RamPanel";
@@ -76,13 +75,6 @@ function SectionHeading({
 
 export function SparkPage({ spark, temperatureUnit }: SparkPageProps) {
   const { metrics } = spark;
-  const [disabledDevices, setDisabledDevices] = useState<string[]>(spark.disabledDevices || []);
-  const [disabledInterfaces, setDisabledInterfaces] = useState<string[]>(
-    spark.disabledInterfaces || []
-  );
-  const [storagePollDisabled, setStoragePollDisabled] = useState<boolean>(
-    spark.storagePollDisabled ?? false
-  );
   const [resourcesOpen, setResourcesOpen] = useState(() =>
     readSectionOpen(SECTION_OPEN_KEYS.resources, true)
   );
@@ -105,38 +97,6 @@ export function SparkPage({ spark, temperatureUnit }: SparkPageProps) {
       return next;
     });
   }, []);
-
-  // Sync when spark data changes (WS push)
-  useEffect(() => {
-    setDisabledDevices(spark.disabledDevices || []);
-  }, [spark.disabledDevices]);
-
-  useEffect(() => {
-    setDisabledInterfaces(spark.disabledInterfaces || []);
-  }, [spark.disabledInterfaces]);
-
-  useEffect(() => {
-    setStoragePollDisabled(spark.storagePollDisabled ?? false);
-  }, [spark.storagePollDisabled]);
-
-  const handleStoragePollModeChange = useCallback(
-    async (disabled: boolean) => {
-      setStoragePollDisabled(disabled);
-      try {
-        await updateSpark(spark.id, { storagePollDisabled: disabled });
-        // When disabling auto-refresh, do one manual refresh immediately
-        if (disabled) {
-          refreshSparkMetric(spark.id, "storage").catch((err) =>
-            console.error("Failed to refresh storage after disabling auto-refresh:", err)
-          );
-        }
-      } catch (err) {
-        console.error("Failed to update storage poll mode:", err);
-        setStoragePollDisabled(!disabled); // revert
-      }
-    },
-    [spark.id]
-  );
 
   const llmOn = isLlmMonitoringEnabled(spark);
   const comfyOn = Boolean(spark.comfyMonitoring);
@@ -199,20 +159,8 @@ export function SparkPage({ spark, temperatureUnit }: SparkPageProps) {
                   sparkId={spark.id}
                   temperatureUnit={temperatureUnit}
                 />
-                <NetworkPanel
-                  network={metrics.network}
-                  sparkId={spark.id}
-                  disabledInterfaces={disabledInterfaces}
-                  onDisabledChange={setDisabledInterfaces}
-                />
-                <StoragePanel
-                  storage={metrics.storage}
-                  sparkId={spark.id}
-                  disabledDevices={disabledDevices}
-                  onDisabledChange={setDisabledDevices}
-                  storagePollDisabled={storagePollDisabled}
-                  onStoragePollModeChange={handleStoragePollModeChange}
-                />
+                <NetworkPanel network={metrics.network} />
+                <StoragePanel storage={metrics.storage} sparkId={spark.id} />
                 {tailscaleOn && <TailscalePanel tailscale={metrics.tailscale ?? null} />}
               </>
             ) : (
@@ -225,20 +173,8 @@ export function SparkPage({ spark, temperatureUnit }: SparkPageProps) {
                   temperatureUnit={temperatureUnit}
                   className={tailscaleOn ? "md:row-span-3" : "md:row-span-2"}
                 />
-                <StoragePanel
-                  storage={metrics.storage}
-                  sparkId={spark.id}
-                  disabledDevices={disabledDevices}
-                  onDisabledChange={setDisabledDevices}
-                  storagePollDisabled={storagePollDisabled}
-                  onStoragePollModeChange={handleStoragePollModeChange}
-                />
-                <NetworkPanel
-                  network={metrics.network}
-                  sparkId={spark.id}
-                  disabledInterfaces={disabledInterfaces}
-                  onDisabledChange={setDisabledInterfaces}
-                />
+                <StoragePanel storage={metrics.storage} sparkId={spark.id} />
+                <NetworkPanel network={metrics.network} />
                 {tailscaleOn && <TailscalePanel tailscale={metrics.tailscale ?? null} />}
               </>
             )}
