@@ -1,10 +1,8 @@
 import type { SparkSnapshot } from "../../api/types";
 import { resolveSparkRole } from "../../api/sparkRole";
-import { SparkActions } from "./SparkActions";
 
 interface SparkHeaderProps {
   spark: SparkSnapshot;
-  onEdit?: () => void;
 }
 
 function formatUptime(seconds: number): string {
@@ -19,7 +17,7 @@ function formatUptime(seconds: number): string {
   return `${days}d ${remainHours}h`;
 }
 
-export function SparkHeader({ spark, onEdit }: SparkHeaderProps) {
+export function SparkHeader({ spark }: SparkHeaderProps) {
   const { hardware } = spark;
   const online = spark.online;
   const hermes = spark.hermes;
@@ -131,13 +129,6 @@ export function SparkHeader({ spark, onEdit }: SparkHeaderProps) {
           </p>
         </div>
       </div>
-
-      {/* Desktop action cluster (hidden on mobile; mobile renders its own row above Resources) */}
-      <SparkActions
-        spark={spark}
-        onEdit={onEdit}
-        className="ml-auto hidden flex-wrap items-center justify-end gap-2 sm:flex"
-      />
     </div>
   );
 }

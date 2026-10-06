@@ -26,7 +26,7 @@ interface SparkTabsProps {
   sparks: SparkSnapshot[];
   activeId: string | null;
   onSelect: (id: string) => void;
-  onAdd: () => void;
+  onAdd?: () => void;
   onEdit?: (id: string) => void;
   onReorder?: (orderedIds: string[]) => void;
 }
@@ -343,7 +343,7 @@ export function SparkTabs({
             />
           </div>
         ))}
-        <AddButton onAdd={onAdd} />
+        {onAdd && <AddButton onAdd={onAdd} />}
       </nav>
     );
   }
@@ -372,7 +372,7 @@ export function SparkTabs({
             />
           ))}
         </SortableContext>
-        <AddButton onAdd={onAdd} />
+        {onAdd && <AddButton onAdd={onAdd} />}
       </nav>
 
       <DragOverlay dropAnimation={{ duration: 180, easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)" }}>
@@ -389,7 +389,7 @@ export function SparkTabs({
   );
 }
 
-function AddButton({ onAdd }: { onAdd: () => void }) {
+function AddButton({ onAdd }: { onAdd?: () => void }) {
   return (
     <button
       type="button"
@@ -438,7 +438,7 @@ function MobileSparkMenu({
   sparks: SparkSnapshot[];
   activeId: string | null;
   onSelect: (id: string) => void;
-  onAdd: () => void;
+  onAdd?: () => void;
   isOpen: boolean;
   onClose: () => void;
 }) {
@@ -453,7 +453,7 @@ function MobileSparkMenu({
   );
 
   const handleAddClick = useCallback(() => {
-    onAdd();
+    onAdd?.();
     onClose();
   }, [onAdd, onClose]);
 
@@ -514,15 +514,17 @@ function MobileSparkMenu({
           {spark.name}
         </button>
       ))}
-      <button
-        type="button"
-        role="menuitem"
-        className="mobile-menu-item mobile-menu-add"
-        onClick={handleAddClick}
-      >
-        <PlusIcon className="h-3.5 w-3.5" />
-        Add Spark/GPU Host
-      </button>
+      {onAdd && (
+        <button
+          type="button"
+          role="menuitem"
+          className="mobile-menu-item mobile-menu-add"
+          onClick={handleAddClick}
+        >
+          <PlusIcon className="h-3.5 w-3.5" />
+          Add Spark/GPU Host
+        </button>
+      )}
     </div>
   );
 }

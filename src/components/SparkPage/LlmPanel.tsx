@@ -1064,33 +1064,6 @@ export function LlmPanel({
       accent={available}
       icon={<BotIcon />}
       className={`panel-llm ${className}`}
-      actions={
-        <div className="flex items-center gap-1.5">
-          {onRemovePort && (
-            <button type="button" title={`Remove port ${llmPort}`} onClick={() => onRemovePort(llmPort)} className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-danger transition-colors hover:bg-danger/10">
-              <span aria-hidden>{"\u00D7"}</span><span>Remove</span>
-            </button>
-          )}
-          <button
-            type="button"
-            title={showSettings ? "Done" : "LLM settings"}
-            onClick={() => {
-              if (showSettings) {
-                setPortDraft(String(llmPort));
-                setApiKeyDraft("");
-                setClearApiKey(false);
-                setSaveError(null);
-              }
-              setShowSettings(!showSettings);
-            }}
-            disabled={saving}
-            className={`flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted transition-colors hover:bg-surface-hover disabled:opacity-50 ${showSettings ? "bg-surface-elevated text-text" : ""}`}
-          >
-            <GearIcon />
-            <span>{showSettings ? "Done" : "Settings"}</span>
-          </button>
-        </div>
-      }
     >
       {showSettings ? (
         <div className="space-y-3">
@@ -1128,15 +1101,6 @@ export function LlmPanel({
             )}
             <p className="text-xs text-muted">{llm?.posture?.auth === "protected" ? `${llm.posture.label} on :${llmPort}` : `No model loaded on :${llmPort}`}</p>
           </div>
-          <LlmLaunchers
-            sparkId={sparkId}
-            llmPort={llmPort}
-            modelId={llm?.modelId}
-            onDecode={openLocalDecode}
-            onPrefill={openLocalPrefill}
-            onRemoteDecode={openRemoteDecode}
-            onRemotePrefill={openRemotePrefill}
-          />
           <LlmDailyChart sparkId={sparkId} llmPort={llmPort} />
         </div>
       ) : (
@@ -1326,31 +1290,8 @@ export function LlmPanel({
             <CompactCard label="Tok/Step" value={fmtNum(llm?.tokPerStep, 2)} />
           </div>
 
-          {/* ═══ ROW 7 — ACTIONS ═══ */}
-          <div className="llm-actions">
-            <button type="button" onClick={() => setBenchOpen(true)} className="llm-action-btn">Run decode benchmark</button>
-            <button type="button" onClick={() => { const params = new URLSearchParams(); if (llmPort) params.set("port", String(llmPort)); if (llm?.modelId) params.set("model", llm.modelId); const q = params.toString() ? `?${params.toString()}` : ""; window.open(`/showcase/${encodeURIComponent(sparkId)}${q}`, "_blank", "noopener,noreferrer"); }} className="llm-action-btn">Showcase</button>
-          </div>
         </div>
       )}
-
-      <BenchmarkDialog
-        open={benchOpen}
-        onClose={() => setBenchOpen(false)}
-        sparkId={sparkId}
-        llmPort={llmPort}
-        modelId={remoteTarget ? null : llm?.modelId ?? null}
-        remoteTarget={remoteTarget}
-      />
-      <PrefillBenchDialog
-        open={prefillBenchOpen}
-        onClose={() => setPrefillBenchOpen(false)}
-        sparkId={sparkId}
-        llmPort={llmPort}
-        modelId={remoteTarget ? null : llm?.modelId ?? null}
-        contextLength={remoteTarget ? null : llm?.contextLength ?? null}
-        remoteTarget={remoteTarget}
-      />
     </Panel>
   );
 }
